@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Batch 2025-26 Scanner</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- A-Frame and MindAR Libraries -->
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
+
+    <style>
+      /* Smooth fade transitions */
+      .fade-enter {
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.5s ease, transform 0.5s ease;
+      }
+      .fade-enter-active {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      .fade-exit {
+        opacity: 0;
+        transform: translateY(20px);
+        pointer-events: none;
+        transition: opacity 0.3s ease, transform 0.3s ease;
+      }
+
+      /* Scanning Animation */
+      @keyframes scan {
+        0% { top: 0%; opacity: 0; }
+        15% { opacity: 1; }
+        85% { opacity: 1; }
+        100% { top: 100%; opacity: 0; }
+      }
+      .scan-line {
+        position: absolute;
+        width: 100%;
+        height: 3px;
+        background: linear-gradient(to right, transparent, #4ade80, transparent);
+        box-shadow: 0 0 15px #4ade80;
+        animation: scan 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        opacity: 0.8;
+      }
+    </style>
+  </head>
+  <body class="m-0 p-0 overflow-hidden font-sans bg-black text-white">
+
+    <!-- AR SCENE -->
+    <a-scene 
+      mindar-image="imageTargetSrc: ./targets.mind; uiScanning: #scanning-overlay; filterMinCF:0.0001; filterBeta: 0.001;" 
+      color-space="sRGB" 
+      renderer="colorManagement: true, physicallyCorrectLights" 
+      vr-mode-ui="enabled: false" 
+      device-orientation-permission-ui="enabled: false">
+      
+      <a-assets>
+        <video id="ar-video" src="./video.mp4" loop="true" playsinline webkit-playsinline muted crossorigin="anonymous"></video>
+      </a-assets>
+
+      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+      <a-entity id="target-1" mindar-image-target="targetIndex: 0">
+        <!-- 
+           IMPORTANT: Update 'height' here if your video doesn't match the image shape.
+           Current: 16:9 ratio (0.5625) 
+        -->
+        <a-video src="#ar-video" position="0 0 0" height="0.5625" width="1" rotation="0 0 0"></a-video>
+      </a-entity>
+    </a-scene>
+
+
+    <!-- UI LAYER -->
+    <div class="absolute inset-0 z-50 flex flex-col justify-between pointer-events-none safe-area-padding">
+      
+      <!-- TOP HEADER -->
+      <div class="w-full flex justify-center pt-8">
+        <div class="bg-black/40 backdrop-blur-md border border-white/10 px-4 py-1.5 rounded-full flex items-center gap-2 shadow-lg">
+          <div id="status-dot" class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
+          <span id="status-text" class="text-xs font-semibold tracking-wider uppercase text-white/90">Live Camera</span>
+        </div>
+      </div>
+
+      <!-- CENTER SCANNER (Controlled by MindAR) -->
+      <div id="scanning-overlay" class="hidden">
+        <div class="absolute inset-0 flex items-center justify-center">
+          <div class="relative w-72 h-72 sm:w-80 sm:h-80 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-[2px] overflow-hidden">
+             <!-- Corners -->
+             <div class="absolute top-0 left-0 w-12 h-12 border-t-[3px] border-l-[3px] border-green-400 rounded-tl-2xl"></div>
+             <div class="absolute top-0 right-0 w-12 h-12 border-t-[3px] border-r-[3px] border-green-400 rounded-tr-2xl"></div>
+             <div class="absolute bottom-0 left-0 w-12 h-12 border-b-[3px] border-l-[3px] border-green-400 rounded-bl-2xl"></div>
+             <div class="absolute bottom-0 right-0 w-12 h-12 border-b-[3px] border-r-[3px] border-green-400 rounded-br-2xl"></div>
+             <!-- Moving Line -->
+             <div class="scan-line"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BOTTOM CARD (The Modern Card) -->
+      <div id="bottom-card" class="w-full p-6 pb-10 fade-enter-active">
+        <div class="bg-white/10 backdrop-blur-xl border border-white/10 rounded-3xl p-5 shadow-2xl">
+          <div class="flex items-start justify-between">
+            <div>
+              <p class="text-green-400 text-xs font-bold tracking-widest uppercase mb-1">Augmented Reality</p>
+              <h1 class="text-2xl font-bold text-white mb-1">Batch - 2025-26</h1>
+              <p class="text-gray-300 text-sm leading-relaxed">
+                Point your camera at the photo to unlock the memory.
+              </p>
+            </div>
+            <!-- Decorative Icon -->
+            <div class="bg-white/10 p-2 rounded-full">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PLAYING CONTROLS (Hidden by default) -->
+      <div id="playing-controls" class="w-full flex justify-center pb-12 fade-exit absolute bottom-0">
+        <div class="bg-black/60 backdrop-blur-md px-6 py-2 rounded-full border border-white/10 flex items-center gap-3">
+           <span class="w-2 h-2 bg-green-500 rounded-full shadow-[0_0_10px_rgba(34,197,94,0.8)]"></span>
+           <span class="text-sm font-medium">Memory Playing...</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- LOGIC -->
+    <script>
+      const target = document.querySelector('#target-1');
+      const video = document.querySelector('#ar-video');
+      const bottomCard = document.querySelector('#bottom-card');
+      const playingControls = document.querySelector('#playing-controls');
+      const statusDot = document.querySelector('#status-dot');
+      const statusText = document.querySelector('#status-text');
+
+      // Audio Unlock
+      document.body.addEventListener('click', () => {
+         if(video.muted) {
+           video.muted = false;
+         }
+      });
+
+      // Target Found
+      target.addEventListener("targetFound", event => {
+        console.log("Found");
+        video.play();
+        
+        // UI Updates
+        // 1. Hide the instruction card
+        bottomCard.classList.remove('fade-enter-active');
+        bottomCard.classList.add('fade-exit');
+        
+        // 2. Show the "Playing" pill
+        playingControls.classList.remove('fade-exit');
+        playingControls.classList.add('fade-enter-active');
+
+        // 3. Update Top Status
+        statusDot.classList.remove('bg-red-500', 'animate-pulse');
+        statusDot.classList.add('bg-green-500');
+        statusText.textContent = "Tracking Active";
+      });
+
+      // Target Lost
+      target.addEventListener("targetLost", event => {
+        console.log("Lost");
+        video.pause();
+        
+        // UI Updates (Revert)
+        bottomCard.classList.remove('fade-exit');
+        bottomCard.classList.add('fade-enter-active');
+        
+        playingControls.classList.remove('fade-enter-active');
+        playingControls.classList.add('fade-exit');
+
+        statusDot.classList.remove('bg-green-500');
+        statusDot.classList.add('bg-red-500', 'animate-pulse');
+        statusText.textContent = "Live Camera";
+      });
+    </script>
+  </body>
+</html>
