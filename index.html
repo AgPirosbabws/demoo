@@ -1,145 +1,88 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Batch 2025-26 Memory</title>
-    
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- A-Frame and MindAR -->
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AR Scanner</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
-
     <style>
-      /* --- FIX 1: TRANSPARENT BACKGROUND --- */
-      /* This ensures the camera feed (which sits behind the site) is visible */
-      html, body {
+      body {
         margin: 0;
-        padding: 0;
-        width: 100%;
-        height: 100%;
         overflow: hidden;
-        background-color: transparent !important; 
       }
-      
-      /* --- CINEMA MODE TRANSITIONS --- */
-      .ui-container {
-        transition: opacity 0.8s ease-in-out;
-        opacity: 1;
-      }
-      .cinema-mode {
-        opacity: 0;
-        pointer-events: none;
-      }
-
-      /* --- SCANNER ANIMATION --- */
-      @keyframes scan {
-        0% { top: 0%; opacity: 0; }
-        15% { opacity: 1; }
-        85% { opacity: 1; }
-        100% { top: 100%; opacity: 0; }
-      }
-      .scan-line {
-        position: absolute;
-        width: 100%;
-        height: 2px;
-        background: #4ade80;
-        box-shadow: 0 0 12px #4ade80;
-        animation: scan 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+      /* This ensures the camera video covers the whole screen */
+      .a-canvas {
+        width: 100% !important;
+        height: 100% !important;
+        position: absolute !important;
+        top: 0;
+        left: 0;
       }
     </style>
   </head>
   <body>
-
-    <!-- AR SCENE -->
+    
+    <!-- 
+      MindAR Scene 
+      - uiLoading="no": We use the default browser loading or A-Frame's default.
+      - uiScanning="no": Removes custom overlay requirements.
+      - renderer: Ensures colors look correct.
+    -->
     <a-scene 
-      mindar-image="imageTargetSrc: ./targets.mind; uiScanning: #dummy-scanner; filterMinCF:0.0001; filterBeta: 0.001;" 
+      mindar-image="imageTargetSrc: ./targets.mind; filterMinCF:0.0001; filterBeta: 0.001;" 
       color-space="sRGB" 
       renderer="colorManagement: true, physicallyCorrectLights" 
       vr-mode-ui="enabled: false" 
       device-orientation-permission-ui="enabled: false">
       
       <a-assets>
-        <video id="ar-video" src="./video.mp4" loop="true" playsinline webkit-playsinline muted crossorigin="anonymous"></video>
+        <!-- 
+          The Video File 
+          Note: 'muted' is required for auto-play on some browsers until user interacts.
+        -->
+        <video id="vid" src="./video.mp4" loop="true" playsinline webkit-playsinline muted crossorigin="anonymous"></video>
       </a-assets>
 
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-      <!-- TRACKING TARGET -->
-      <a-entity id="target-1" mindar-image-target="targetIndex: 0">
+      <!-- 
+        The Target 
+        targetIndex: 0 corresponds to the first image in your targets.mind file.
+      -->
+      <a-entity id="target" mindar-image-target="targetIndex: 0">
         <!-- 
-           FIX 2: VIDEO SIZE ADJUSTMENT
-           Change 'height' below to match your photo's shape.
-           - If photo is Wide (Landscape): try 0.5625
-           - If photo is Square: try 1
-           - If photo is Tall (Portrait): try 1.33 or 1.5
+          Video Plane
+          width="1" is standard.
+          height="1": CHANGE THIS NUMBER based on your image shape.
+             - If image is Wide (16:9): height="0.5625"
+             - If image is Tall (Portrait): height="1.33" or "1.5"
+             - If image is Square: height="1"
         -->
-        <a-video src="#ar-video" position="0 0 0" height="1.33" width="1" rotation="0 0 0"></a-video>
+        <a-video src="#vid" position="0 0 0" height="1" width="1" rotation="0 0 0"></a-video>
       </a-entity>
     </a-scene>
 
-    <!-- DUMMY UI (Silences default scanner) -->
-    <div id="dummy-scanner" class="hidden"></div>
-
-    <!-- MAIN UI (Fades out when playing) -->
-    <div id="main-ui" class="absolute inset-0 z-50 flex flex-col justify-between p-6 pb-12 ui-container">
-      
-      <!-- Top Badge -->
-      <div class="w-full flex justify-center pt-4">
-        <div class="bg-black/40 backdrop-blur-md border border-white/10 px-4 py-1.5 rounded-full flex items-center gap-2 shadow-lg">
-          <div class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
-          <span class="text-[10px] font-bold tracking-widest uppercase text-white/90 font-mono">Live Camera</span>
-        </div>
-      </div>
-
-      <!-- Scanner Frame -->
-      <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <div class="relative w-64 h-64 sm:w-80 sm:h-80 opacity-80">
-           <div class="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-white/80 rounded-tl-lg"></div>
-           <div class="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-white/80 rounded-tr-lg"></div>
-           <div class="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-white/80 rounded-bl-lg"></div>
-           <div class="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-white/80 rounded-br-lg"></div>
-           <div class="scan-line"></div>
-        </div>
-      </div>
-
-      <!-- Bottom Text -->
-      <div class="w-full">
-        <div class="bg-gradient-to-t from-black/80 to-transparent p-6 rounded-2xl backdrop-blur-sm border border-white/5">
-          <p class="text-green-400 text-[10px] font-bold tracking-[0.2em] uppercase mb-2">Augmented Reality</p>
-          <h1 class="text-3xl font-bold text-white mb-2 tracking-tight">Batch 2025-26</h1>
-          <p class="text-gray-400 text-sm font-light">
-            Scan the group photo to view the memory.
-          </p>
-        </div>
-      </div>
-    </div>
-
-    <!-- LOGIC -->
     <script>
-      const target = document.querySelector('#target-1');
-      const video = document.querySelector('#ar-video');
-      const mainUI = document.querySelector('#main-ui');
+      const target = document.querySelector('#target');
+      const video = document.querySelector('#vid');
 
-      // Audio unlock
+      // Basic interaction to unmute video if needed
       document.body.addEventListener('click', () => {
-         if(video.muted) video.muted = false;
+        if(video.muted) {
+          video.muted = false;
+        }
       });
 
-      // Found
+      // When Target is Found
       target.addEventListener("targetFound", event => {
-        console.log("Found");
+        console.log("Target Found");
         video.play();
-        mainUI.classList.add('cinema-mode');
       });
 
-      // Lost
+      // When Target is Lost
       target.addEventListener("targetLost", event => {
-        console.log("Lost");
+        console.log("Target Lost");
         video.pause();
-        mainUI.classList.remove('cinema-mode');
       });
     </script>
   </body>
