@@ -4,14 +4,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Batch 2022-2026</title>
     
-    <!-- Tailwind CSS for easy styling -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- A-Frame and MindAR Libraries -->
+    <!-- A-Frame and MindAR -->
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
 
     <style>
-      /* 1. Reset to ensure full screen camera visibility */
+      /* Ensure full screen camera visibility with no borders */
       body, html {
         margin: 0;
         padding: 0;
@@ -20,74 +20,31 @@
         overflow: hidden;
         background-color: transparent !important;
       }
-
-      /* 2. Custom Scanning Animation */
-      @keyframes pulse-border {
-        0% { transform: scale(1); opacity: 1; }
-        50% { transform: scale(1.05); opacity: 0.8; }
-        100% { transform: scale(1); opacity: 1; }
-      }
-      
-      .scan-frame {
-        width: 70vw; /* Responsive width */
-        height: 70vw; /* Keep it square */
-        max-width: 300px;
-        max-height: 300px;
-        border: 2px solid rgba(255, 255, 255, 0.8);
-        border-radius: 20px;
-        position: relative;
-        box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
-      }
-      
-      .scan-corner {
-        position: absolute;
-        width: 30px;
-        height: 30px;
-        border-color: #4ade80; /* bright green */
-        border-style: solid;
-        border-width: 4px;
-        animation: pulse-border 2s infinite ease-in-out;
-      }
     </style>
   </head>
   <body>
 
-    <!-- 
-      1. CUSTOM LOADING SCREEN 
-      This is linked via uiLoading: #custom-loader
-    -->
+    <!-- 1. MINIMAL LOADING SCREEN -->
     <div id="custom-loader" class="absolute inset-0 z-50 flex items-center justify-center bg-black text-white">
       <div class="text-center">
         <div class="inline-block w-8 h-8 border-4 border-white/30 border-t-white rounded-full animate-spin mb-4"></div>
-        <p class="text-xs tracking-[0.2em] font-light uppercase opacity-70">Loading Experience</p>
+        <p class="text-xs tracking-[0.2em] font-light uppercase opacity-70">Loading Memory</p>
       </div>
     </div>
 
     <!-- 
-      2. CUSTOM SCANNING UI
-      This is linked via uiScanning: #scanner-ui
-      MindAR will AUTOMATICALLY hide this div when the target is found.
+      2. SCANNING UI (Text Only - No Frame)
+      - "justify-end pb-24": Puts the text at the bottom so the center is clear for scanning.
+      - MindAR automatically hides this entire div when the image is found.
     -->
-    <div id="scanner-ui" class="absolute inset-0 z-40 flex flex-col items-center justify-center hidden">
-      <!-- The Scanning Frame -->
-      <div class="scan-frame relative">
-        <div class="scan-corner top-0 left-0 border-r-0 border-b-0 rounded-tl-xl"></div>
-        <div class="scan-corner top-0 right-0 border-l-0 border-b-0 rounded-tr-xl"></div>
-        <div class="scan-corner bottom-0 left-0 border-r-0 border-t-0 rounded-bl-xl"></div>
-        <div class="scan-corner bottom-0 right-0 border-l-0 border-t-0 rounded-br-xl"></div>
-      </div>
-
-      <!-- The Text Below -->
-      <div class="mt-12 text-center">
+    <div id="scanner-ui" class="absolute inset-0 z-40 flex flex-col items-center justify-end pb-24 hidden">
+      <div class="text-center px-6 py-4 bg-black/20 backdrop-blur-sm rounded-2xl border border-white/5">
         <h1 class="text-white text-2xl font-light tracking-wide drop-shadow-md">Batch 2022-2026</h1>
-        <p class="text-white/60 text-xs mt-2 font-light tracking-widest uppercase">Scan the Memory</p>
+        <p class="text-white/70 text-[10px] mt-1 font-light tracking-[0.2em] uppercase">Scan the Photo</p>
       </div>
     </div>
 
-    <!-- 
-      3. AR SCENE 
-      Notice the 'uiLoading' and 'uiScanning' attributes pointing to our custom divs above.
-    -->
+    <!-- 3. AR SCENE -->
     <a-scene 
       mindar-image="imageTargetSrc: ./targets.mind; uiLoading: #custom-loader; uiScanning: #scanner-ui; filterMinCF:0.0001; filterBeta: 0.001;" 
       color-space="sRGB" 
@@ -101,40 +58,36 @@
 
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-      <!-- TRACKING TARGET -->
+      <!-- TARGET -->
       <a-entity id="target-1" mindar-image-target="targetIndex: 0">
         <!-- 
-          IMPORTANT: VIDEO HEIGHT 
-          Adjust 'height' based on your image shape.
-          - Wide Image (16:9): height="0.5625"
-          - Tall Image (Portrait): height="1.33"
-          - Square Image: height="1"
+           IMPORTANT: If video shape is wrong, change 'height' here.
+           - Wide (Landscape): 0.5625
+           - Tall (Portrait): 1.33
+           - Square: 1
         -->
         <a-video src="#ar-video" position="0 0 0" height="1" width="1" rotation="0 0 0"></a-video>
       </a-entity>
     </a-scene>
 
-    <!-- 4. LOGIC TO PLAY/PAUSE VIDEO -->
     <script>
       const target = document.querySelector('#target-1');
       const video = document.querySelector('#ar-video');
 
-      // Simple click to unmute if needed
+      // Click to unmute
       document.body.addEventListener('click', () => {
          if(video.muted) video.muted = false;
       });
 
+      // Events
       target.addEventListener("targetFound", event => {
         console.log("Found");
         video.play();
-        // Note: We don't need to manually hide the UI here.
-        // MindAR detects 'uiScanning: #scanner-ui' and hides it automatically!
       });
 
       target.addEventListener("targetLost", event => {
         console.log("Lost");
         video.pause();
-        // MindAR automatically shows the UI again here.
       });
     </script>
   </body>
